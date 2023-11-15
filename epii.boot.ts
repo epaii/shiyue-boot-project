@@ -1,7 +1,9 @@
 import { createServer, App } from "shiyue";
 import { onBootFinish } from "epii-boot";
-import { readConfig } from "epii-read-config";
+import { getConfig, readConfig } from "epii-read-config";
 import { _doBootFunctions } from "./src";
+import fs from "fs";
+import { ServerOptions } from "https";
 
 export default function (data: any) {
 
@@ -9,7 +11,16 @@ export default function (data: any) {
     data.app = app;
     onBootFinish(async () => {
         await _doBootFunctions(app);
-        app.listen();
+        if(getConfig("wss",0)-1===0){
+            let options:ServerOptions = {
+                key: fs.readFileSync( getConfig("wss.key")),
+                cert: fs.readFileSync(getConfig("wss.cert"))
+            };
+            app.listen(null,options);
+        }else{
+            app.listen();
+        }
+        
     });
 
 }
